@@ -1,6 +1,5 @@
 #include <SoftwareSerial.h>
 
-
 //bluetooth pins
 int rdx = 3;
 int txd = 2;
