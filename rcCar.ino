@@ -158,7 +158,7 @@ static void wait1(unsigned long currentTime){
 */
 
 static void motorTestLeft(){
-   
+    unsigned long currentTime = millis();
     lMotorsForward();
     wait1();
     lMotorsStop();
@@ -187,7 +187,7 @@ static void FBRL(){
     wait1(currentTime);
     stop();
 
-    backward();
+    reverse();
     wait1(currentTime);
     stop();
 
@@ -218,11 +218,12 @@ void loop(){
     /*
     *High level motor testing
     */
-    FBRL();
-
+    // FBRL();
 
     /*
     *Actual code
     */
+
+   
     
 }
