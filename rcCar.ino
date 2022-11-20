@@ -1,12 +1,13 @@
 #include <SoftwareSerial.h>
 
 //Default: motors off
+//all methods turn motors off after they're done executing.
 
-// //bluetooth pins
-// int rdx = 3;
-// int txd = 2;
-// //serial communication object
-// SoftwareSerial blueTooth(tdx,txd);
+//bluetooth pins
+int rdx = 0;
+int txd = 1;
+//serial communication object
+SoftwareSerial blueTooth(rdx,txd);
 
 //rMotor pins
 //ena
@@ -35,33 +36,37 @@ void setup(){
     pinMode(dirPin2B, OUTPUT);
 }
 
-void loop(){
-    motorTestLeft();
-    motorTestRight();
-    int currentTimeGlobal = millis();
-    while(millis()-currentTimeGlobal < 1000){
-        continue;
-    }
 
-}
+/*
+ * High level motor control
+ * 
+ */
 
-//High level motor control. 
+/**
+ * @brief Turns lMotors forward, rMotors backwards.
+*/
 static void turnRight(){
-    //lFront and lBack motors +1
-    //rFront and rBack motors -1
+    lMotorsForward();
+    rMotorsReverse();
 }
-
 static void turnLeft(){
-    //lFront and lBack motors -1
-    //rFront and rBack motors +1
+    lMotorsReverse();
+    rMotorsForward();
 }
 
 static void forward(){
-    //all motors +1
+    rMotorsForward();
+    lMotorsForward();
 }
 
 static void reverse(){
-    //all motors -1
+    rMotorsReverse();
+    lMotorsReverse();
+}
+
+static void stop(){
+    rMotorsStop();
+    lMotorsStop(); 
 }
 
 
@@ -70,7 +75,7 @@ static void reverse(){
 *Low level motor control functions. 
 *
 */
-//turns on all motors on left.
+//turns all left motors on. 
 static void lMotorsForward(){
     analogWrite(speedPinA, 255);
     digitalWrite(dirPin1A,HIGH);
@@ -83,18 +88,38 @@ static void lMotorsReverse(){
     digitalWrite(dirPin2A,HIGH);
 }
 
-//turns off all motors on left. 
+//turns all left motors off. 
 static void lMotorsStop(){
     analogWrite(speedPinA, 0);
     digitalWrite(dirPin1A,LOW);
     digitalWrite(dirPin2A,LOW);
 }
- 
 static void rMotorsForward(){
+    analogWrite(speedPinB, 255);
+    digitalWrite(dirPin1B,LOW); 
+    digitalWrite(dirPin2B,HIGH);
+}
+
+static void rMotorsReverse(){
     analogWrite(speedPinB, 255);
     digitalWrite(dirPin1B,HIGH);
     digitalWrite(dirPin2B,LOW);
 }
+
+//I fucked up the wiring and forwards and backwards are switched,
+//so im going to flip high and low up above^
+// static void rMotorsForward(){
+//     analogWrite(speedPinB, 255);
+//     digitalWrite(dirPin1B,HIGH);
+//     digitalWrite(dirPin2B,LOW);
+// }
+
+// static void rMotorsReverse(){
+//     analogWrite(speedPinB, 255);
+//     digitalWrite(dirPin1B,LOW);
+//     digitalWrite(dirPin2B,HIGH);
+// }
+
 //Turns off all motors on the right.
 static void rMotorsStop(){
     analogWrite(speedPinB, 0);
@@ -103,37 +128,101 @@ static void rMotorsStop(){
 }
 
 
+/**
+ * @brief Waits 1 second. 
+ * 
+ */
+static void wait1(){
+    unsigned long currentTime = millis();
+    while((millis()-currentTime) < 1000){
+        continue;
+    }
+}
+
+/**
+ * @brief Waits 1 second. 
+ * 
+ * @param currentTime 
+ *      the last time check in the program, in miliseconds.
+ */
+static void wait1(unsigned long currentTime){
+    currentTime = millis();
+    while((millis()-currentTime) < 1000){
+        continue;
+    }
+}
+
 
 /*
 *Motor testing
 */
 
 static void motorTestLeft(){
-    unsigned long currentTime = millis();
+   
     lMotorsForward();
-    while((millis()-currentTime) < 1000){
-        continue;
-    }
+    wait1();
+    lMotorsStop();
+
     currentTime = millis();
     lMotorsReverse();
-    while(millis()-currentTime < 1000){
-        continue;
-    }
+    wait1();
     lMotorsStop();
 }
 
 static void motorTestRight(){
     unsigned long currentTime = millis();
     rMotorsForward();
-    while((millis()-currentTime) < 1001){
-        continue;
-    }
+    wait1();
+    rMotorsStop();
 
     currentTime = millis();
     rMotorsReverse();
-    while(millis()-currentTime < 1001){
-        continue;
-    }
+    wait1();
     rMotorsStop();
 }
 
+static void FBRL(){
+    unsigned long currentTime = millis();
+    forward();
+    wait1(currentTime);
+    stop();
+
+    backward();
+    wait1(currentTime);
+    stop();
+
+    turnRight();
+    wait1(currentTime);
+    stop();
+
+    turnLeft();
+    wait1(currentTime);
+    stop();
+}
+
+
+
+
+void loop(){
+
+    /*
+    *Testing
+    */
+
+    /*
+    *Low level motor testing
+    */
+    // motorTestLeft();
+    // motorTestRight();
+
+    /*
+    *High level motor testing
+    */
+    FBRL();
+
+
+    /*
+    *Actual code
+    */
+    
+}
