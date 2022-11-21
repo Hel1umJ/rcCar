@@ -3,11 +3,11 @@
 //Default: motors off
 //all methods turn motors off after they're done executing.
 
-//bluetooth pins
-int rdx = 0;
-int txd = 1;
+//bluetooth pins (on module)
+int rx = 1; //rx on module = tx on arduino
+int tx = 0; //tx on module = rx on arduino
 //serial communication object
-SoftwareSerial blueTooth(rdx,txd);
+SoftwareSerial blueTooth(rx,tx);
 
 //rMotor pins
 //ena
@@ -25,8 +25,14 @@ int dirPin1B = 6;
 //in5; (counterClockwise)
 int dirPin2B = 7;
 
-//declare pinmodes, initialize values. Setup: "the constructor of an arduino" (it has the same functionality save for actually creating and returning an object referece).
+//declare pinmodes, initialize values. Setup: "the constructor of an arduino" 
+//(it has the same functionality save for actually creating and returning an 
+//object referece).
 void setup(){
+    //setup serial and softwareSerial to 9600 bps.
+    Serial.begin(9600);
+    blueTooth.begin(9600);
+    //Motor pins setup
     pinMode(speedPinA, OUTPUT);
     pinMode(dirPin1A, OUTPUT);
     pinMode(dirPin2A, OUTPUT);
@@ -53,41 +59,35 @@ static void turnLeft(){
     lMotorsReverse();
     rMotorsForward();
 }
-
 static void forward(){
     rMotorsForward();
     lMotorsForward();
 }
-
 static void reverse(){
     rMotorsReverse();
     lMotorsReverse();
 }
-
 static void stop(){
     rMotorsStop();
     lMotorsStop(); 
 }
-
-
 /*
 *
 *Low level motor control functions. 
 *
 */
+
 //turns all left motors on. 
 static void lMotorsForward(){
     analogWrite(speedPinA, 255);
     digitalWrite(dirPin1A,HIGH);
     digitalWrite(dirPin2A,LOW);
 }
-
 static void lMotorsReverse(){
     analogWrite(speedPinA, 255);
     digitalWrite(dirPin1A,LOW);
     digitalWrite(dirPin2A,HIGH);
 }
-
 //turns all left motors off. 
 static void lMotorsStop(){
     analogWrite(speedPinA, 0);
@@ -98,36 +98,28 @@ static void rMotorsForward(){
     analogWrite(speedPinB, 255);
     digitalWrite(dirPin1B,LOW); 
     digitalWrite(dirPin2B,HIGH);
+    //I fucked up the wiring and forwards and backwards are switched,
+    //so im going to flip high and low up above^
+    //analogWrite(speedPinB, 255);
+    //digitalWrite(dirPin1B,HIGH);
+    //digitalWrite(dirPin2B,LOW);
 }
-
 static void rMotorsReverse(){
     analogWrite(speedPinB, 255);
     digitalWrite(dirPin1B,HIGH);
     digitalWrite(dirPin2B,LOW);
+    //I fucked up the wiring and forwards and backwards are switched,
+    //so im going to flip high and low up above^
+    //analogWrite(speedPinB, 255);
+    //digitalWrite(dirPin1B,LOW);
+    //digitalWrite(dirPin2B,HIGH);
 }
-
-//I fucked up the wiring and forwards and backwards are switched,
-//so im going to flip high and low up above^
-// static void rMotorsForward(){
-//     analogWrite(speedPinB, 255);
-//     digitalWrite(dirPin1B,HIGH);
-//     digitalWrite(dirPin2B,LOW);
-// }
-
-// static void rMotorsReverse(){
-//     analogWrite(speedPinB, 255);
-//     digitalWrite(dirPin1B,LOW);
-//     digitalWrite(dirPin2B,HIGH);
-// }
-
 //Turns off all motors on the right.
 static void rMotorsStop(){
     analogWrite(speedPinB, 0);
     digitalWrite(dirPin1B,LOW);
     digitalWrite(dirPin2B,LOW);
 }
-
-
 /**
  * @brief Waits 1 second. 
  * 
@@ -138,7 +130,6 @@ static void wait1(){
         continue;
     }
 }
-
 /**
  * @brief Waits 1 second. 
  * 
@@ -152,11 +143,41 @@ static void wait1(unsigned long currentTime){
     }
 }
 
+/*
+*Serial Communication
+*/
+static void doAction(SoftwareSerial s){
+    //0: stopped
+    //1: forward
+    //2: reverse
+    //3: right
+    //4: left
+    int state = 0; 
+
+    state = s.read();
+    while(!state == 0){
+        if(state == 1){
+            //forward
+        }else if(state = 2){
+            //reverse
+        }else if(state = 3){
+            //right
+        }else{
+            //left
+        }
+        //If statement that checks if the action has changed (if the steram has anything else in it), and updates state accordingly. 
+        int stateNext = s.read();
+        if(!(stateNext == state)){
+
+        }
+    }
+    
+}
+
 
 /*
 *Motor testing
 */
-
 static void motorTestLeft(){
     unsigned long currentTime = millis();
     lMotorsForward();
@@ -200,8 +221,20 @@ static void FBRL(){
     stop();
 }
 
-
-
+/*
+*Serial Communication testing
+*/
+static void testBlueToothIO(SoftwareSerial s){
+    if(s.available()>0){
+        char next = s.read();
+        Serial.print(next);
+    }else{
+        Serial.println("Nothing in Stream");
+        wait1();
+        wait1();
+    }
+    
+}
 
 void loop(){
 
@@ -218,12 +251,18 @@ void loop(){
     /*
     *High level motor testing
     */
-    // FBRL();
+    //FBRL();
 
+    /*
+    *BlueTooth testing
+    */
+    // Serial.println("Hi");
+    // wait1();
+
+    testBlueToothIO(blueTooth);
     /*
     *Actual code
     */
-
-   
     
+     
 }
