@@ -4,9 +4,10 @@
 //all methods turn motors off after they're done executing.
 
 //bluetooth pins (on module)
-int rx = 1; //rx on module = tx on arduino
-int tx = 0; //tx on module = rx on arduino
+int rx = 10; //rx on module = tx on arduino?
+int tx = 11; //tx on module = rx on arduino?
 //serial communication object
+
 SoftwareSerial blueTooth(rx,tx);
 
 //rMotor pins
@@ -31,7 +32,8 @@ int dirPin2B = 7;
 void setup(){
     //setup serial and softwareSerial to 9600 bps.
     Serial.begin(9600);
-    blueTooth.begin(9600);
+    blueTooth.begin(38400);
+    
     //Motor pins setup
     pinMode(speedPinA, OUTPUT);
     pinMode(dirPin1A, OUTPUT);
@@ -40,6 +42,10 @@ void setup(){
     pinMode(speedPinB, OUTPUT);
     pinMode(dirPin1B, OUTPUT);
     pinMode(dirPin2B, OUTPUT);
+
+    //Test setup
+    pinMode(8,OUTPUT);
+    digitalWrite(8,LOW);
 }
 
 
@@ -119,6 +125,13 @@ static void rMotorsStop(){
     analogWrite(speedPinB, 0);
     digitalWrite(dirPin1B,LOW);
     digitalWrite(dirPin2B,LOW);
+}
+
+static void waitFifth(){
+    unsigned long currentTime = millis();
+    while(millis()-currentTime <= 200){
+        continue;
+    }
 }
 /**
  * @brief Waits 1 second. 
@@ -224,17 +237,34 @@ static void FBRL(){
 /*
 *Serial Communication testing
 */
-static void testBlueToothIO(SoftwareSerial s){
+
+static void testStreamInput(SoftwareSerial s){
     if(s.available()>0){
         char next = s.read();
-        Serial.print(next);
-    }else{
-        Serial.println("Nothing in Stream");
+        wait1();
+        Serial.println("output: " + String(next));
+    }else if(!(s.available()>0)){
+        Serial.println("Ready for input");
         wait1();
         wait1();
     }
-    
 }
+static void LEDTest(){
+    if(Serial.available()>0){
+        char next = Serial.read();
+        if(next=='a'){
+            digitalWrite(8, HIGH);
+        }else if(next == 'b'){
+            digitalWrite(8,LOW);
+        }
+        Serial.print(String(next));
+    }
+    wait1();
+}
+
+
+
+
 
 void loop(){
 
@@ -256,10 +286,33 @@ void loop(){
     /*
     *BlueTooth testing
     */
-    // Serial.println("Hi");
-    // wait1();
+    //testBlueToothIO(blueTooth);
+    //testStreamInput(blueTooth);
 
-    testBlueToothIO(blueTooth);
+    //Test HC-05 via softwareSerial
+    // if(blueTooth.available()>0){
+    //     char next = blueTooth.read();
+    //     wait1();
+    //     Serial.println("output: " + String(next));
+    // }else if(!(s.available()>0)){
+    //     Serial.println("Ready for input");
+    //     wait1();
+    //     wait1();
+    // }
+
+    //test HC-05 via Serial
+    if(Serial.available()>0){
+        char next = Serial.read();
+        wait1();
+        Serial.println("output: " + String(next));
+    }else if(!(Serial.available()>0)){
+        Serial.println("Ready for input");
+        wait1();
+        wait1();
+    }
+
+    //LEDTest();
+    
     /*
     *Actual code
     */
